@@ -73,8 +73,8 @@ Deploy the application backend to Heroku:
     ```
     where:
 
-    *`BACKEND_API_KEY` - a custom key that the ChatGPT will be using to authenticate with the application backend.
-    *`DB_URL` - a connection endpoint to a Postgres instance. If you use YugabyteDB Managed, the the URL format should be as follows: `jdbc:postgresql://{YGABYTEDB_NODE_ADDRESS}:5433/yugabyte?ssl=true&sslmode=require`
+    * `BACKEND_API_KEY` - a custom key that the ChatGPT will be using to authenticate with the application backend.
+    * `DB_URL` - a connection endpoint to a Postgres instance. If you use YugabyteDB Managed, the the URL format should be as follows: `jdbc:postgresql://{YGABYTEDB_NODE_ADDRESS}:5433/yugabyte?ssl=true&sslmode=require`
 
 8. Deploy the application to Heroku:
 
