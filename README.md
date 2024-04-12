@@ -1,237 +1,178 @@
-# YugaPlus: Movie Recommendations Service with OpenAI, Spring AI, and PostgreSQL pgvector
+# OpenAI GPT Plugin With Spring AI and PostgreSQL pgvector
 
-This is a sample movie recommendation service that is built on an OpenAI embedding model, Spring AI framework and PostgreSQL pgvector.
+Follow this guide to create and launch a custom OpenAI GPT plugin using Spring AI and PostgreSQL pgvector.
+
+The plugin will turn ChatGPT into a movie sommelier - a fully autonomous AI agent that provides you with movie recommendations and updates your movies catalogue.
 
 <img width="812" alt="yugaplus-screenshot" src="https://github.com/YugabyteDB-Samples/YugaPlus/assets/1537233/afa794a7-4ed5-41e6-ba59-fb07d7c5c0cd">
 
-The service takes user questions written in plain English and uses a gen AI stack (OpenAI, Spring AI and PostgreSQL pgvector) to provide the user with the most relevant movie recommendations.
+The AI will use Postgres and its pgvector extension to retrieve information from a custom movies databases. Then, ChatGPT will be able to update your own movie catalogue with various movies selection.
 
 ## Prerequisites
 
-1. The latest version of Docker and Docker Compose.
+1. [ChatGPT account](http://chat.openai.com)
 2. [OpenAI API key](https://platform.openai.com)
+3. Java 21+ and Maven.
+4. [Heroku account](https://dashboard.heroku.com/apps)
+5. [YugabyteDB Managed](http://cloud.yugabyte.com/) or another Postgres distribution that supports the pgvector extension.
 
-If you're planning to run the app on bare metal, then make sure to have:
+## Provision Postgres With pgvector
 
-1. Node.js 20+
-2. Java 21+. Use [sdkman](https://sdkman.io) to install it within a minute.
-3. Maven 3.9+
+The ChatGPT knowledgbase will be augmented with the information stored in Postgres. The AI agent will be querying or updating data stored in Postgres by following a conversation with the users.
 
-## Start Database Instance In Docker
+Deploy an instance of Postgres distribution that supports the pgvector extension. The database has to be accessable to an application backend that will be deployed on Heroku.
 
-The pgvector extension is supported by a single-server PostgreSQL instance as well as a multi-node YugabyteDB cluster. Feel free to use any of the database options.
+In this guide, we're using YugabyteDB - a distributed database built on Postgres. With YugabyteDB, the OpenAI GPT plugin will be able to scale read with write workloads and tolerate possible outages in the cloud.
 
-### Start PostgreSQL in Docker
+Create a single-node instance or multi-node [YugabyteDB Managed cluster](https://docs.yugabyte.com/preview/yugabyte-cloud/)
 
-1. Create the `postgres-volume` directory for the Postgres container's volume in your home dir. The volume is handy if you'd like to access the logs easily and don't want to lose data when the container is recreated from scratch:
+## Deploy Application Backend to Heroku
 
-    ```shell
-    mkdir ~/postgres-volume
-    ```
+Deploy the application backend to Heroku:
 
-2. Create a custom Docker network:
-
-    ```shell
-    docker network create yugaplus-network
-    ```
-
-3. Start the Postgres container with the pgvector extension:
+1. Go to the backend directory:
 
     ```shell
-    docker run --name postgres --net yugaplus-network \
-        -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=password \
-        -p 5432:5432 \
-        -v ~/postgres-volume/:/var/lib/postgresql/data \
-        -d ankane/pgvector:latest
+    cd backend/
     ```
 
-4. Make sure the container is running:
+2. Build the backend:
 
     ```shell
-    docker container ls -f name=postgres
+    mvn clean package -DskipTests
     ```
 
-### Start YugabyteDB in Docker
-
-1. Create a custom Docker network:
+3. Log in to your Heroku account:
 
     ```shell
-    docker network create yugaplus-network
+    heroku login
     ```
 
-2. Start a YugabyteDB cluster:
+4. Install the Java plugin on Heroku:
 
     ```shell
-    rm -r ~/yugabyte-volume
-    mkdir ~/yugabyte-volume
-
-    docker run -d --name yugabytedb-node1 --net yugaplus-network \
-    -p 15433:15433 -p 7001:7000 -p 9001:9000 -p 5433:5433 \
-    -v ~/yugabyte-volume/node1:/home/yugabyte/yb_data --restart unless-stopped \
-    yugabytedb/yugabyte:latest \
-    bin/yugabyted start --base_dir=/home/yugabyte/yb_data --daemon=false
-    
-    # Wait until the first node is initialized and ready to accept connection
-    while ! docker exec -it yugabytedb-node1 postgres/bin/pg_isready -U yugabyte -h yugabytedb-node1; do sleep 1; done
-
-    docker run -d --name yugabytedb-node2 --net yugaplus-network \
-    -p 15434:15433 -p 7002:7000 -p 9002:9000 -p 5434:5433 \
-    -v ~/yugabyte-volume/node2:/home/yugabyte/yb_data --restart unless-stopped \
-    yugabytedb/yugabyte:latest \
-    bin/yugabyted start --join=yugabytedb-node1 --base_dir=/home/yugabyte/yb_data --daemon=false
-        
-    docker run -d --name yugabytedb-node3 --net yugaplus-network \
-    -p 15435:15433 -p 7003:7000 -p 9003:9000 -p 5435:5433 \
-    -v ~/yugabyte-volume/node3:/home/yugabyte/yb_data --restart unless-stopped \
-    yugabytedb/yugabyte:latest \
-    bin/yugabyted start --join=yugabytedb-node1 --base_dir=/home/yugabyte/yb_data --daemon=false
+    heroku plugins:install java
     ```
 
-## Start Application
+5. Create a Heroku application for the backend:
 
-You have an option of deploying the application in Docker or on your host operating system (bare metal).
-
-## Start Application With Docker Compose
-
-By default, the containers will attempt to connect to the PostgreSQL container.
-If you use YugabyteDB:
-
-1. Update the following settings in the `docker-compose.yaml`:
-
-    ```yaml
-    - DB_URL=jdbc:postgresql://yugabytedb-node1:5433/yugabyte
-    - DB_USER=yugabyte
-    - DB_PASSWORD=yugabyte
+    ```shell
+    heroku create openai-gpt-plugin-backend
     ```
 
-2. If you use YugabyteDB 2.20.1 or later, then add the following parameter:
+6. Provide application and database-specific configuration settings to Heroku:
 
-    ```yaml
-    - DB_CONN_INIT_SQL="SET yb_silence_advisory_locks_not_supported_error=true"
+    ```shell
+    heroku config:set PORT=80 -a openai-gpt-plugin-backend
+    heroku config:set OPENAI_API_KEY=<YOUR_OPEN_AI_API_KEY> -a openai-gpt-plugin-backend
+    heroku config:set BACKEND_API_KEY=OpenAIGPTPlugin -a openai-gpt-plugin-backend
+
+    heroku config:set DB_URL="<YOUR_DB_URL>" -a openai-gpt-plugin-backend
+    heroku config:set DB_USER=<YOUR_DB_USER> -a openai-gpt-plugin-backend
+    heroku config:set DB_PASSWORD=<YOUR_DB_PWD> -a openai-gpt-plugin-backend
     ```
 
-During the first run, build an image and only then start the containers:
+    where:
+        *`BACKEND_API_KEY` - a custom key that the ChatGPT will be using to authenticate with the application backend.
+        * `DB_URL` - a connection endpoint to a Postgres instance. If you use YugabyteDB Managed, the the URL format should be as follows: `jdbc:postgresql://{YGABYTEDB_NODE_ADDRESS}:5433/yugabyte?ssl=true&sslmode=require`
+
+7. Deploy the application to Heroku:
+
+    ```shell
+    heroku deploy:jar target/yugaplus-backend-1.0.0.jar -a openai-gpt-plugin-backend
+    ```
+
+Once deployed, check the application logs to ensure it's started without failures and managed to connect to your database.
 
 ```shell
-docker-compose up --build
+heroku logs --tail -a openai-gpt-plugin-backend
 ```
 
-Once the image is ready, use this command to start the containers:
+Test the application by sending the following HTTP request with HTTPie tool:
 
 ```shell
-docker-compose up
+http GET https://{YOUR_APP_URL_ON_HEROKU}/api/movie/search prompt=="A long time ago in a galaxy far, far away..." X-Api-Key:OpenAIGPTPlugin
 ```
 
-## Start Application in Docker
+## Configure Custom Domain and SSL Certificate
 
-Start the backend in Docker:
+ChatGPT requires you to register and use a custom verified domain for GPT plugins. Also, you need to configure an SSL certificate on Heroku for your applicaion.
 
-1. Create a Docker image for the backend:
+Overall, you need to:
 
-    ```shell
-    cd backend
-    docker build -t yugaplus-backend .  
-    ```
+* Register a custom doman
+* Create an SSL certificate for your app on Heroku (Heroku supports the automatically managed certificates)
+* Use the custom domain for your Heroku deployment.
+* Verify your OpenAI builder profile and custom domain with ChatGPT.
 
-2. Start a backend container:
+[This video](https://youtu.be/Ysh9dwia8FM?t=251) shows how to perfom these steps using GoDaddy as a DNS provider.
 
-    For PostgreSQL:
+Once everything is set up properly, validate that the following API call executes succesfully replacing the `YOUR_CUSTOM_DOMAIN` with your domain:
 
-    ```shell
-    docker run --name yugaplus-backend --net yugaplus-network -p 8080:8080 \
-        -e DB_URL=jdbc:postgresql://postgres:5432/postgres \
-        -e DB_USER=postgres \
-        -e DB_PASSWORD=password \
-        -e OPENAI_API_KEY=your-api-key \
-        yugaplus-backend
-    ```
+```shell
+http GET https://{YOUR_CUSTOM_DOMAIN}/api/movie/search prompt=="A long time ago in a galaxy far, far away..." X-Api-Key:OpenAIGPTPlugin
+```
 
-    For YugabyteDB:
+## Creating OpenAI GPT Plugin
 
-    ```shell
-    docker run --name yugaplus-backend --net yugaplus-network -p 8080:8080 \
-        -e DB_URL=jdbc:postgresql://yugabytedb-node1:5433/yugabyte \
-        -e DB_USER=yugabyte \
-        -e DB_PASSWORD=yugabyte \
-        -e OPENAI_API_KEY=your-api-key \
-        yugaplus-backend
-    ```
+Next, let's create a custom GPT plugin and deploy it on the [OpenAI GPT Store](https://openai.com/blog/introducing-the-gpt-store).
 
-Start the frontend in Docker:
+Note, as a custom GPT builder, you'll be able to earn if your custom GPT gets traction on the marketplace. This is what OpenAI says:
 
-1. Create a Docker image for the frontend:
+*In Q1 we will launch a GPT builder revenue program. As a first step, US builders will be paid based on user engagement with their GPTs. We'll provide details on the criteria for payments as we get closer.*
 
-    ```shell
-    cd frontend
-    docker build -t yugaplus-frontend .  
-    ```
+Your plugin will turn ChatGPT into a movie sommelier - a fully autonomous AI agent that provides you with movie recommendations and updates your movies catalogue.
 
-2. Start a frontend container:
+To achieve that, ChatGPT uses [actions](https://platform.openai.com/docs/actions/introduction) that let the LLM connect to your application and access APIs that are defined in a configuration file following the [OpenAPI Specification](https://swagger.io/specification/).
 
-    ```shell
-    docker run --name yugaplus-frontend --net yugaplus-network -p 3000:3000 \
-        -e REACT_APP_PROXY_URL=http://yugaplus-backend:8080 \
-        yugaplus-frontend
-    ```
+Follow the steps below to create a plugin for the movie sommelier or watch the video (TBD).
 
-### Start Application on Bare Metal
+First, create a custom GPT plugin and configure the actions:
 
-By default, the backend will attempt to connect to the PostgreSQL container.
-If you use YugabyteDB:
+* Go to your [custom GPTs](https://chat.openai.com/gpts/mine)
+* Start configuring the plugin naming it **Movie Sommelier**
 
-1. Update the following settings in the `application.properties` file:
+    Picture TBD
 
-    ```properties
-    spring.datasource.url = jdbc:postgresql://yugabytedb-node1:5433/yugabyte
-    spring.datasource.username = yugabyte
-    spring.datasource.password = yugabyte
-    ```
+Next, create configure a new action:
 
-2. If you use YugabyteDB 2.20.1 or later, then add the following parameter:
+* Open the provided `gpt-spec.yaml` file and change the `server.url` property to the name of your custom domain name that points out to the Heroku application.
 
-    ```properties
-    spring.datasource.hikari.connection-init-sql="SET yb_silence_advisory_locks_not_supported_error=true"
-    ```
+* Start configuring a new action pasting the contents of the `gpt-spec.yaml` file into the **schema** area:
+    Picture TBD
 
-Start the backend:
+* Click the **Authentication** menu and configure the **API Key** authentication method (use `OpenAIGPTPlugin` as a value for the **API Key** field):
 
-1. Provide your OpenAI key in the `backend/src/main/resources/application.properties` file:
+    Picture TBD
 
-    ```properties
-    spring.ai.openai.api-key=sk-
-    ```
+* Click the **Test** button for one API endpoints making sure ChatGPT can make a call to the Heroku app:
 
-2. Go to the backend directory and start the app:
+    Picture TBD
 
-    ```shell
-    cd backend
-    mvn spring-boot:run
-    ```
+Then, go to the **GPT Builder** screen and provide the following input. ChatGPT will take this input a generate instructions for the plugin.
 
-Start the frontend:
+```text
+You are a world-famous movie critic who can easily come up with movie recommendations even for the most demanding users. You're using the provided Action that draws information from a third-party service. 
 
-1. Go to the frontend directory:
+Additionally, you can assist users in viewing their movie catalogue and updating it by adding or removing movies.
 
-    ```shell
-    cd frontend
-    ```
+If a user asks to add or remove a movie from the catalogue, double-check first to ensure they really want to proceed with the update. If the user becomes annoyed by your requests for permission to update the catalogue, stop asking for permission and proceed with the updates.
+```
 
-2. Start the app:
+Picture TDB
 
-    ```shell
-    npm install
-    npm start
-    ```
+After that, the click on the **Configure** screen to see the final instructions, conversation starts and other details. For instance, the final instructions might be as follows:
 
-## Test Application
+```text
+As a world-famous movie critic, I use my vast knowledge and the third-party plugin to provide personalized movie recommendations and assist users with managing their movie catalogues. I can recommend movies, view user libraries, and help add or remove movies from their catalogues. I always confirm with users before making changes to their catalogue, unless they request to skip confirmation steps.
+```
 
-Go to [http://localhost:3000](http://localhost:3000) and test the application.
+Finally, click the **Create** button and launch the GPT plugin:
 
-Sign in using the following credentials:
+Picture TBD
 
-* `user1@gmail.com/password` - already has some movies in the library
-* `user2@gmail.com/password` - the library is empty
+## Play With Plugin
 
-Try a few prompts:
-*A movie about a space adventure.*
-*A kids-friendly movie with unexpected ending.*
+Go ahead and give a try to the movie sommelier! Ask for some movie recommendations, aks to show your personal movie catalogue and don't hesitate asking to add or remove movies from your own collection.
+
+Picture TBD

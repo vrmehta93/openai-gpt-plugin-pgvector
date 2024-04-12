@@ -68,11 +68,88 @@ paths:
           description: Not found
         "500":
           description: Server error
+  /api/library/load:
+    get:
+      operationId: loadUserLibrary
+      summary: Loads the user library of movies
+      description: Retrieves a list of movies from the user library.
+      responses:
+        "200":
+          description: Successful response with a list of movies
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/getMoviesResponse"
+        "401":
+          description: Unauthorized request
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+        "500":
+          description: Server error
+  /api/library/add/{movieId}:
+    put:
+      operationId: addMovieToUserLibrary
+      summary: Adds a movie to the user library
+      description: Adds a movie to the user library based on the movie ID.
+      parameters:
+        - in: path
+          name: movieId
+          required: true
+          description: The movie ID to add to the user library.
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful response with a message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseStatus"
+        "401":
+          description: Unauthorized request
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+        "500":
+          description: Server error
+  /api/library/remove/{movieId}:
+    delete:
+      operationId: removeMovieFromUserLibrary
+      summary: Removes a movie from the user library
+      description: Removes a movie from the user library based on the movie ID.
+      parameters:
+        - in: path
+          name: movieId
+          required: true
+          description: The movie ID to remove from the user library.
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Successful response with a message
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ResponseStatus"
+        "401":
+          description: Unauthorized request
+        "400":
+          description: Bad request
+        "404":
+          description: Not found
+        "500":
+          description: Server error
 components:
   schemas:
     Movie:
       type: object
       properties:
+        id:
+          type: integer
+          description: The movie ID.
         title:
           type: string
           description: The movie title.
@@ -96,21 +173,24 @@ components:
           items:
             type: string
           description: The list of genres.
+    ResponseStatus:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: The success flag.
+        code:
+          type: integer
+          description: The status code.
+        message:
+          type: string
+          description: The status message.
     getMoviesResponse:
       type: object
       properties:
         status:
           type: object
-          properties:
-            success:
-              type: boolean
-              description: The success flag.
-            code:
-              type: integer
-              description: The status code.
-            message:
-              type: string
-              description: The status message.
+          $ref: "#/components/schemas/ResponseStatus"
         movies:
           type: array
           items:
