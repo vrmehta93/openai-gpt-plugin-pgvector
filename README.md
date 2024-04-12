@@ -73,8 +73,8 @@ Deploy the application backend to Heroku:
     ```
     where:
 
-        *`BACKEND_API_KEY` - a custom key that the ChatGPT will be using to authenticate with the application backend.
-        * `DB_URL` - a connection endpoint to a Postgres instance. If you use YugabyteDB Managed, the the URL format should be as follows: `jdbc:postgresql://{YGABYTEDB_NODE_ADDRESS}:5433/yugabyte?ssl=true&sslmode=require`
+    *`BACKEND_API_KEY` - a custom key that the ChatGPT will be using to authenticate with the application backend.
+    *`DB_URL` - a connection endpoint to a Postgres instance. If you use YugabyteDB Managed, the the URL format should be as follows: `jdbc:postgresql://{YGABYTEDB_NODE_ADDRESS}:5433/yugabyte?ssl=true&sslmode=require`
 
 8. Deploy the application to Heroku:
 
@@ -179,5 +179,6 @@ Finally, click the **Create** button and launch the GPT plugin:
 
 Go ahead and give a try to the movie sommelier! Ask for some movie recommendations, aks to show your personal movie catalogue and don't hesitate asking to add or remove movies from your own collection.
 
-![8-play-with-plugin](https://github.com/YugabyteDB-Samples/openai-gpt-plugin-pgvector/assets/1537233/7d6fe16d-e07d-4113-9d98-85e2974da2d6)
+![8-play-with-plugin](https://github.com/YugabyteDB-Samples/openai-gpt-plugin-pgvector/assets/1537233/7b827ee0-4658-4289-bb68-13d7e33dc61c)
+
 
