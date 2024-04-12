@@ -4,7 +4,7 @@ Follow this guide to create and launch a custom OpenAI GPT plugin using Spring A
 
 The plugin will turn ChatGPT into a movie sommelier - a fully autonomous AI agent that provides you with movie recommendations and updates your movies catalogue.
 
-<img width="812" alt="yugaplus-screenshot" src="https://github.com/YugabyteDB-Samples/YugaPlus/assets/1537233/afa794a7-4ed5-41e6-ba59-fb07d7c5c0cd">
+![main-picture](https://github.com/YugabyteDB-Samples/openai-gpt-plugin-pgvector/assets/1537233/998a9763-c455-4973-b87a-20cdeec443be)
 
 The AI will use Postgres and its pgvector extension to retrieve information from a custom movies databases. Then, ChatGPT will be able to update your own movie catalogue with various movies selection.
 
@@ -71,12 +71,12 @@ Deploy the application backend to Heroku:
     heroku config:set DB_USER=<YOUR_DB_USER> -a openai-gpt-plugin-backend
     heroku config:set DB_PASSWORD=<YOUR_DB_PWD> -a openai-gpt-plugin-backend
     ```
-
     where:
+
         *`BACKEND_API_KEY` - a custom key that the ChatGPT will be using to authenticate with the application backend.
         * `DB_URL` - a connection endpoint to a Postgres instance. If you use YugabyteDB Managed, the the URL format should be as follows: `jdbc:postgresql://{YGABYTEDB_NODE_ADDRESS}:5433/yugabyte?ssl=true&sslmode=require`
 
-7. Deploy the application to Heroku:
+8. Deploy the application to Heroku:
 
     ```shell
     heroku deploy:jar target/yugaplus-backend-1.0.0.jar -a openai-gpt-plugin-backend
@@ -132,22 +132,23 @@ First, create a custom GPT plugin and configure the actions:
 * Go to your [custom GPTs](https://chat.openai.com/gpts/mine)
 * Start configuring the plugin naming it **Movie Sommelier**
 
-    Picture TBD
+    ![1_start_configuring](https://github.com/YugabyteDB-Samples/openai-gpt-plugin-pgvector/assets/1537233/f97bf688-bd61-4fca-9536-14d2c0f421b3)
 
 Next, create configure a new action:
 
 * Open the provided `gpt-spec.yaml` file and change the `server.url` property to the name of your custom domain name that points out to the Heroku application.
 
 * Start configuring a new action pasting the contents of the `gpt-spec.yaml` file into the **schema** area:
-    Picture TBD
+   
+    ![2-configure-action-specification](https://github.com/YugabyteDB-Samples/openai-gpt-plugin-pgvector/assets/1537233/e8f0c876-268a-4c43-8d3a-39c6ca813339)
 
 * Click the **Authentication** menu and configure the **API Key** authentication method (use `OpenAIGPTPlugin` as a value for the **API Key** field):
-
-    Picture TBD
+    
+    ![3-configure-authentication](https://github.com/YugabyteDB-Samples/openai-gpt-plugin-pgvector/assets/1537233/12e7fc8c-4337-4598-adc1-7b7622ae49e7)
 
 * Click the **Test** button for one API endpoints making sure ChatGPT can make a call to the Heroku app:
 
-    Picture TBD
+    ![4-test-actions](https://github.com/YugabyteDB-Samples/openai-gpt-plugin-pgvector/assets/1537233/dcf071e4-5c22-47ae-8c50-5da62e2d3913)
 
 Then, go to the **GPT Builder** screen and provide the following input. ChatGPT will take this input a generate instructions for the plugin.
 
@@ -159,7 +160,8 @@ Additionally, you can assist users in viewing their movie catalogue and updating
 If a user asks to add or remove a movie from the catalogue, double-check first to ensure they really want to proceed with the update. If the user becomes annoyed by your requests for permission to update the catalogue, stop asking for permission and proceed with the updates.
 ```
 
-Picture TDB
+
+![5-generate-instructions](https://github.com/YugabyteDB-Samples/openai-gpt-plugin-pgvector/assets/1537233/4f718d27-e10b-4d12-b263-303b5a4d1cdf)
 
 After that, the click on the **Configure** screen to see the final instructions, conversation starts and other details. For instance, the final instructions might be as follows:
 
@@ -167,12 +169,15 @@ After that, the click on the **Configure** screen to see the final instructions,
 As a world-famous movie critic, I use my vast knowledge and the third-party plugin to provide personalized movie recommendations and assist users with managing their movie catalogues. I can recommend movies, view user libraries, and help add or remove movies from their catalogues. I always confirm with users before making changes to their catalogue, unless they request to skip confirmation steps.
 ```
 
+![6-final-configuration-screen](https://github.com/YugabyteDB-Samples/openai-gpt-plugin-pgvector/assets/1537233/8f7905cd-7c94-4a8c-8c2f-47edf3e38be5)
+
 Finally, click the **Create** button and launch the GPT plugin:
 
-Picture TBD
+![7-launch-gpt](https://github.com/YugabyteDB-Samples/openai-gpt-plugin-pgvector/assets/1537233/7e2905b9-9ca5-4913-ad1f-2ef617bcb840)
 
 ## Play With Plugin
 
 Go ahead and give a try to the movie sommelier! Ask for some movie recommendations, aks to show your personal movie catalogue and don't hesitate asking to add or remove movies from your own collection.
 
-Picture TBD
+![8-play-with-plugin](https://github.com/YugabyteDB-Samples/openai-gpt-plugin-pgvector/assets/1537233/7d6fe16d-e07d-4113-9d98-85e2974da2d6)
+
