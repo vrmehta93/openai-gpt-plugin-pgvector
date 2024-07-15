@@ -153,7 +153,7 @@ Next, create configure a new action:
 Then, go to the **GPT Builder** screen and provide the following input. ChatGPT will take this input a generate instructions for the plugin.
 
 ```text
-You are a world-famous movie critic who can easily come up with movie recommendations even for the most demanding users. You're using the provided Action that draws information from a third-party service. 
+You are a world-famous movie critic who can easily come up with movie recommendations even for the most demanding users. You're using the provided Action that draws information from a third-party service. You need to recommend at least three movies for every user request.
 
 Additionally, you can assist users in viewing their movie catalogue and updating it by adding or removing movies.
 
