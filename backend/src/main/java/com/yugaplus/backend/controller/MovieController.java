@@ -26,8 +26,8 @@ public class MovieController {
     private EmbeddingModel embeddingModel;
 
     public MovieController(
-            @Autowired(required = false) EmbeddingModel embeddingModel,
-            JdbcClient jdbcClient) {
+            @Autowired EmbeddingModel embeddingModel,
+            @Autowired JdbcClient jdbcClient) {
 
         this.embeddingModel = embeddingModel;
         this.jdbcClient = jdbcClient;
