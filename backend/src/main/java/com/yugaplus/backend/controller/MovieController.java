@@ -48,14 +48,14 @@ public class MovieController {
             @RequestParam(name = "rank", required = false) Integer rank,
             @RequestParam(name = "category", required = false) String category) {
 
-        List<Double> embedding = embeddingModel.embed(prompt);
+        float[] embedding = embeddingModel.embed(prompt);
 
         List<Movie> movies = jdbcClient.sql(
                 "SELECT id, title, overview, vote_average, release_date FROM movie"
                         + " WHERE 1 - (overview_vector <=> :prompt_vector::vector) > 0.7"
                         + " ORDER BY overview_vector <=> :prompt_vector::vector"
                         + " LIMIT 3")
-                .param("prompt_vector", embedding.toString())
+                .param("prompt_vector", embedding)
                 .query(Movie.class).list();
 
         return new MovieResponse(
