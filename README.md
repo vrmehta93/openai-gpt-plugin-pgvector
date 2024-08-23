@@ -6,7 +6,9 @@ The plugin will turn ChatGPT into a movie sommelier - a fully autonomous AI agen
 
 ![main-picture](https://github.com/YugabyteDB-Samples/openai-gpt-plugin-pgvector/assets/1537233/998a9763-c455-4973-b87a-20cdeec443be)
 
-The AI will use Postgres and its pgvector extension to retrieve information from a custom movies databases. Then, ChatGPT will be able to update your own movie catalogue with various movies selection.
+The AI will use Postgres and its pgvector extension to retrieve information from a custom movies databases. Then, ChatGPT will be able to update your own movie catalogue with various movies selection. The overall architecture looks as follows:
+
+![custom_gpt](https://github.com/user-attachments/assets/7209a1ec-b132-4db5-98b1-490271a006b3)
 
 ## Prerequisites
 
