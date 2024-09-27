@@ -7,6 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class YugaPlusBackendApplication {
 
 	public static void main(String[] args) {
+		System.out.println("Starting app");
 		SpringApplication.run(YugaPlusBackendApplication.class, args);
 	}
 
